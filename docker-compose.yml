@@ -1,0 +1,38 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:latest
+    volumes:
+      - "./volume-db/postgres.sock:/var/run/postgres/postgres.sock"
+      - "dbdata:/var/lib/postgresql/data"
+    environment: 
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_USER: airflow
+      POSTGRES_DB: airflow
+    ports: 
+      - 5432:5432
+    networks: 
+      airflow_net:
+        ipv4_address: 172.19.0.2
+
+  airflow-aplicacao:
+    depends_on:
+      - db
+    build: 
+      context: .
+      dockerfile: airflow-ubuntu-aplicacao.dockerfile
+    volumes:      
+      - "./dags:/home/airflow/dags"
+    networks: 
+      airflow_net:
+        ipv4_address: 172.19.0.3
+  
+volumes:
+    dbdata:
+    
+networks:
+  airflow_net:
+    ipam:
+      driver: default
+      config:
+        - subnet: "172.19.0.0/24" 
